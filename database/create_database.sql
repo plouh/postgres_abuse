@@ -10,7 +10,7 @@ create extension if not exists pgjwt;
 
 -- mandatory roles and their relationships for postgrest
 create role ontrail_anon;
-create role ontrail_authenticator noinherit createrole;
+create role ontrail_authenticator noinherit createrole login password 'kuikka';
 grant ontrail_anon to ontrail_authenticator;
 
 -- create public schemas here

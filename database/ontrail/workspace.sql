@@ -1,0 +1,2 @@
+--
+-- workbench for testing all kind of SQL queries
