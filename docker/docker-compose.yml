@@ -1,0 +1,12 @@
+version: '3'
+services:
+  database:
+    image: mdillon/postgis:10-alpine
+    hostname: ontrail_db
+    volumes:
+      - database:/var/lib/postgresql
+    ports:
+      - 5432:5432
+
+volumes:
+  database:
