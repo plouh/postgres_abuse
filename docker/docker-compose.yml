@@ -1,12 +1,24 @@
 version: '3'
 services:
   database:
-    image: mdillon/postgis:10-alpine
+    build: ./database
     hostname: ontrail_db
     volumes:
       - database:/var/lib/postgresql
     ports:
       - 5432:5432
+  api:
+    image: postgrest/postgrest
+    hostname: ontrail_backend
+    environment:
+      - PGRST_DB_URI=host=ontrail_db port=5432 dbname=ontrail user=postgres
+      - PGRST_DB_SCHEMA=ontrail
+      - PGRST_DB_ANON_ROLE=ontrail_anon
+      - PGRST_JWT_SECRET=SIjVW0VMtMSbmpRzOdxBkoqvClcV2g91
+    ports:
+      - 3000:3000
+    links:
+      - database:ontrail_db
 
 volumes:
   database:
