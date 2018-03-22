@@ -1,0 +1,130 @@
+{
+    "create table": {
+        "prefix": "CTAB",
+        "body": [
+            "create table if not exists ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${1} (",
+            "$2",
+            ");"
+        ],
+        "description": "Create a table"
+    },
+    "create a function": {
+        "prefix": "CFUN",
+        "body": [
+            "create or replace function ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${1}($2) returns ${3}",
+            "  language plpgsql",
+            "  as $$",
+            "begin",
+            "${4}",
+            "end",
+            "$$;",
+        ],
+        "description": "create a function"
+    },
+    "create table with row level security": {
+        "prefix": "CTRLS",
+        "body": [
+            "create table ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${TM_FILENAME_BASE} (",
+            "  id UUID PRIMARY KEY DEFAULT uuid_generate_v1mc(),",
+            "  $1 TEXT not null,",
+            "  $2 INT",
+            "  role TEXT REFERENCES ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}_private.users(role),",
+            "  created_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+            ");",
+            "",
+            "ALTER TABLE ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${TM_FILENAME_BASE} ENABLE ROW LEVEL SECURITY;",
+            "",
+            "-- only show users own data",
+            "drop trigger if exists ensure_role_on_${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}_${TM_FILENAME_BASE} on ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${TM_FILENAME_BASE};",
+            "create trigger ensure_role_on_${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}_${TM_FILENAME_BASE}",
+            "  before insert on ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${TM_FILENAME_BASE}",
+            "  for each row",
+            "  execute procedure ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}_private.set_role();",
+            "",
+            "drop policy if exists ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}_${TM_FILENAME_BASE}_policy on ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${TM_FILENAME_BASE};",
+            "CREATE POLICY ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}_${TM_FILENAME_BASE}_policy ON ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${TM_FILENAME_BASE}",
+            "  for all",
+            "  USING (role = current_user);"
+        ],
+        "description": "Create a table with row level security and trigger to set owners"
+    },
+    "create after trigger function on table": {
+        "prefix": "TRGAFTFUN",
+        "body": [
+            "create or replace function ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${1}() returns trigger",
+            "  language plpgsql",
+            "  as $$",
+            "begin",
+            "${4}",
+            "end",
+            "$$;",
+            "",
+            "drop trigger if exists trigger_${1} on ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${2};",
+            "create constraint trigger trigger_${1}",
+            "  after ${3} on ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${2}",
+            "  for each row",
+            "  execute procedure ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${1}();"
+        ],
+        "description": "Create a function"
+    },
+    "create before trigger function on table": {
+        "prefix": "TRGBEFFUN",
+        "body": [
+            "create or replace function ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${1}() returns trigger",
+            "  language plpgsql",
+            "  as $$",
+            "begin",
+            "${4}",
+            "end",
+            "$$;",
+            "",
+            "drop trigger if exists trigger_${1} on ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${2};",
+            "create trigger trigger_${1}",
+            "  before ${3} on ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${2}",
+            "  for each row",
+            "  execute procedure ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${1}();"
+        ],
+        "description": "Create a function"
+    },
+    "Create function returning a trigger in plpgsql": {
+        "prefix": "CTFUN",
+        "body": [
+            "create or replace function ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${1}() returns trigger language plpgsql",
+            "as $$",
+            "begin",
+            "  $2",
+            "  return new;",
+            "end",
+            "$$;"
+        ],
+        "description": "Create a plpgsql trigger"
+    },
+    "Create a schema": {
+        "prefix": "CSCH",
+        "body": ["create schema if not exists ${1};"],
+        "description": "Create a schema"
+    },
+    "Create role": {
+        "prefix": "CROL",
+        "body": ["create role ${1};"],
+        "description": "Create a role"
+    },
+    "Create index": {
+        "prefix": "ci",
+        "body": ["create index if not exists ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}_${TM_FILENAME_BASE}_${1}_index on ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${TM_FILENAME_BASE}(${1});"],
+        "description": "Create a role"
+    },
+    "quote identifier": {
+        "prefix": "qid",
+        "body": "quote_ident(${1})",
+        "description": "Quote identifier"
+    },
+    "create type": {
+        "prefix": "CTYP",
+        "body": [
+            "drop type if exists ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${1} cascade;",
+            "create type ${TM_DIRECTORY/.*\\/([^\\/]+)/$1/}.${1} AS (${2});"
+        ],
+        "description": "create a new type"
+    }
+}
