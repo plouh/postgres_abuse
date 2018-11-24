@@ -88,6 +88,7 @@ $$;
 -- by postgrest
 create or replace function ontrail.signup(email text, pass text, name text) returns void
   language plpgsql
+  SET search_path = public, ontrail
   security definer
   as $$
 declare
@@ -123,8 +124,9 @@ create type ontrail_private.jwt_claims AS (email text, role name, exp double pre
 
 -- login RPC: function that gets called when logged in
 --
-create or replace function ontrail.login(email text, pass text) returns text
+create or replace function ontrail.login(email text, pass text) returns json
   language plpgsql
+  SET search_path = public, ontrail
   as $$
 declare
   _role name;
@@ -140,9 +142,11 @@ begin
   select login.email as email, _role as role, extract(epoch from now()) + 5 * 6000 as exp into _token;
 
   return (
-    select sign(row_to_json(_token), current_setting('app.jwt_secret'))
+    select row_to_json(r) from (
+      select sign(row_to_json(_token), current_setting('app.jwt_secret')) as auth_token
+    ) r
   );
-end
+end 
 $$;
 
 

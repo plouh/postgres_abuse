@@ -1,0 +1,24 @@
+### Swagger API
+
+http://localhost:3000/
+
+### create account
+
+POST http://localhost:3000/rpc/signup
+Content-Type: application/json
+
+{
+    "email": "psalmi+1@iki.fi",
+    "name": "Petri Louhelainen",
+    "pass": "laakuikka"
+}
+
+### Login user
+
+POST http://192.168.1.107:3000/rpc/login?
+Content-Type: application/json
+
+{
+    "email": "psalmi+1@iki.fi",
+    "pass": "laakuikka"
+}
